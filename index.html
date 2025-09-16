@@ -1,0 +1,304 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>हाउ टू स्मार्ट स्टडी - ईबुक</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+    
+        body {
+            font-family: 'Arial', sans-serif;
+            overflow-x: hidden;
+        }
+        .section-bg {
+            background: linear-gradient(45deg, #4b6cb7, #182848);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        .highlight-text {
+            color: #f97316;
+            font-weight: bold;
+        }
+        .cta-button {
+            background-color: #f97316;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .cta-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        .box {
+            border-radius: 25px;
+            transition: transform 0.3s ease;
+        }
+        .box:hover {
+            transform: translateY(-5px);
+        }
+        /* FAQ Text Styling */
+        .faq-text {
+            color: #1f2937; /* Dark gray for better visibility */
+        }
+        .faq-text a {
+            color: #1d4ed8; /* Blue for links */
+        }
+        .faq-text a:hover {
+            text-decoration: underline;
+        }
+        /* Animated Gradient Background */
+        .animated-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #4b6cb7, #f97316, #182848);
+            background-size: 200% 200%;
+            animation: gradientShift 15s ease infinite;
+            opacity: 0.2;
+            z-index: 0;
+        }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        /* Floating Shapes */
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(249, 115, 22, 0.3);
+            animation: float 10s ease-in-out infinite;
+        }
+        .shape-1 { width: 100px; height: 100px; top: 10%; left: 5%; }
+        .shape-2 { width: 80px; height: 80px; top: 60%; right: 10%; animation-delay: 2s; }
+        .shape-3 { width: 120px; height: 120px; bottom: 20%; left: 15%; animation-delay: 4s; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        /* Fade-in Animation for Sections */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 1s ease forwards;
+        }
+        @keyframes fadeIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Pulse Animation for CTA */
+        .pulse {
+            animation: pulse 2s ease infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        /* Image Styling */
+        .hero-image {
+            border-radius: 25px;
+            max-width: 300px;
+            height: auto;
+        }
+        /* Video Embed Styling */
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+            max-width: 100%;
+            border-radius: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 25px;
+        }
+        .floating-btn {
+	    position: fixed;
+	    bottom: 20px;   /* distance from bottom */
+	    right: 20px;    /* distance from right */
+	    background-color: #FFD700; /* yellow */
+	    color: #000; /* text color */
+	    padding: 12px 20px;
+	    border: none;
+	    border-radius: 50px; /* makes it pill-shaped */
+	    font-size: 16px;
+	    font-weight: bold;
+	    cursor: pointer;
+	    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+	    transition: transform 0.2s ease;
+	  }
+
+  .floating-btn:hover {
+    transform: scale(1.05);
+  }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Header Section -->
+    <header class="bg-gray-800 text-white text-center py-12 relative">
+        <div class="animated-bg"></div>
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <h1 class="text-4xl md:text-5xl font-bold fade-in">हाउ टू स्मार्ट स्टडी</h1>
+        <h2 class="text-2xl md:text-3xl mt-4 fade-in" style="animation-delay: 0.2s;">टॉपर बनने के लिए आपका मार्गदर्शक - स्मार्ट वर्क के साथ!</h2>
+        <p class="text-lg mt-4 fade-in" style="animation-delay: 0.4s;">डीजी बुक ज़ोन द्वारा ईबुक - केवल ₹99 में</p>
+        <!-- WebP Image -->
+        <img src="https://storeassets.im-cdn.com/media-manager/dgebooks/uOybnXbGQ7O3PtlCEoOJ_4aa56f11d45_0x0_webp.png" alt="Smart Study eBook Cover" class="hero-image mx-auto mt-6 fade-in" style="animation-delay: 0.6s;"><div class="ai-image-placeholder mx-auto mt-6 w-48 h-20 fade-in" style="animation-delay: 0.6s;">
+            <button class="floating-btn">केवल 99 ₹ में पढ़ें</button>
+        </div>
+    </header>
+
+    <!-- What You Will Learn -->
+    <section class="section-bg py-12 relative">
+        <div class="animated-bg"></div>
+        <div class="shape shape-3"></div>
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center fade-in">इस ईबुक में आप क्या सीखेंगे</h2>
+            <p class="text-lg text-center mt-4 fade-in" style="animation-delay: 0.2s;">परीक्षा में उत्कृष्टता प्राप्त करने के लिए सिद्ध तकनीकों के साथ स्मार्ट पढ़ाई की कला सीखें!</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                <div class="bg-white p-6 box shadow fade-in" style="animation-delay: 0.4s;">
+                    <h3 class="text-xl font-bold highlight-text">समय प्रबंधन में महारत</h3>
+                    <p class="faq-text">अपने पढ़ाई के समय को कुशलतापूर्वक प्रबंधित करने की विशेषज्ञ ट्रिक्स सीखें, ताकि कम समय में अधिक कवर हो सके।</p>
+                </div>
+                <div class="bg-white p-6 box shadow fade-in" style="animation-delay: 0.6s;">
+                    <h3 class="text-xl font-bold highlight-text">सक्रिय शिक्षण और पुनरावृत्ति के रहस्य</h3>
+                    <p class="faq-text">जानकारी को लंबे समय तक बनाए रखने और परीक्षा के लिए प्रभावी ढंग से पुनरावृत्ति करने की तकनीकें खोजें।</p>
+                </div>
+                <div class="bg-white p-6 box shadow fade-in" style="animation-delay: 0.8s;">
+                    <h3 class="text-xl font-bold highlight-text">SQ3R और Feynman तकनीकें</h3>
+                    <p class="faq-text">SQ3R और Feynman तकनीक जैसे तेज़ शिक्षण विधियों में महारत हासिल करें, जटिल विषयों को समझने और याद रखने के लिए।</p>
+                </div>
+                <div class="bg-white p-6 box shadow fade-in" style="animation-delay: 1s;">
+                    <h3 class="text-xl font-bold highlight-text">स्वास्थ्य और प्रेरणा योजना</h3>
+                    <p class="faq-text">एक संतुलित पढ़ाई योजना बनाएं जो आपको स्वस्थ, प्रेरित और सफलता के लिए केंद्रित रखे।</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Read This eBook -->
+    <section class="py-12 text-center relative">
+        <div class="shape shape-1"></div>
+        <h2 class="text-3xl font-bold fade-in">इस ईबुक को क्यों पढ़ें</h2>
+        <p class="text-lg mt-4 max-w-3xl mx-auto fade-in" style="animation-delay: 0.2s;">यह ईबुक आपकी पढ़ाई की आदतों को बदलने के लिए डिज़ाइन की गई है, जिससे सीखना आनंददायक और प्रभावी बनता है। चाहे आप स्कूल की परीक्षाओं, प्रतियोगी परीक्षाओं की तैयारी कर रहे हों, या बस स्मार्ट पढ़ाई करना चाहते हों, यह गाइड आपके लिए है!</p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 max-w-4xl mx-auto">
+            <div class="bg-gray-200 p-6 box shadow fade-in" style="animation-delay: 0.4s;">
+                <h3 class="text-xl font-bold highlight-text">बेहतर परीक्षा परिणाम</h3>
+                <p class="faq-text">कम तनाव के साथ अपनी परीक्षाओं में उच्च अंक प्राप्त करने की रणनीतियाँ सीखें।</p>
+            </div>
+            <div class="bg-gray-200 p-6 box shadow fade-in" style="animation-delay: 0.6s;">
+                <h3 class="text-xl font-bold highlight-text">प्रतियोगी परीक्षाओं में सफलता</h3>
+                <p class="faq-text">सिद्ध तकनीकों के साथ प्रतियोगी परीक्षाओं की तैयारी को सरल बनाएं।</p>
+            </div>
+            <div class="bg-gray-200 p-6 box shadow fade-in" style="animation-delay: 0.8s;">
+                <h3 class="text-xl font-bold highlight-text">तनाव-मुक्त शिक्षण</h3>
+                <p class="faq-text">पढ़ाई को मजेदार और आकर्षक बनाएं, परीक्षा से संबंधित चिंता को कम करें।</p>
+            </div>
+        </div>
+        <!-- AI Image Placeholder -->
+        <div class="ai-image-placeholder mx-auto mt-6 w-100 fade-in" style="animation-delay: 1s;">
+            <img src="study.jpg"/>
+
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="section-bg py-12 text-center relative">
+        <div class="animated-bg"></div>
+        <div class="shape shape-2"></div>
+        <h2 class="text-3xl font-bold fade-in">आज ही अपनी कॉपी प्राप्त करें!</h2>
+        <p class="text-lg mt-4 fade-in" style="animation-delay: 0.2s;">केवल ₹99 में, स्मार्ट पढ़ाई के रहस्यों को अनलॉक करें और शैक्षणिक सफलता की ओर पहला कदम उठाएं।</p>
+        <div class="ai-image-placeholder mx-auto mt-6 w-48 h-20 fade-in" style="animation-delay: 0.6s;">
+            <button class="floating-btn">केवल 99 ₹ में पढ़ें</button>
+        </div>
+    </section>
+
+    <!-- About DG Books Zone -->
+    <section class="py-12 text-center relative">
+        <div class="shape shape-3"></div>
+        <h2 class="text-3xl font-bold fade-in">डीजी बुक ज़ोन के बारे में</h2>
+        <p class="text-lg mt-4 max-w-3xl mx-auto fade-in" style="animation-delay: 0.2s;">डीजी बुक ज़ोन छात्रों को उच्च-गुणवत्ता वाले शैक्षिक संसाधन प्रदान करने के लिए समर्पित है। हमारा मिशन व्यावहारिक, किफायती और प्रभावी उपकरण प्रदान करना है ताकि छात्र शैक्षणिक रूप से उत्कृष्टता प्राप्त करें और अपने सपनों को हासिल करें।</p>
+        <p class="mt-4 fade-in" style="animation-delay: 0.4s;">संपर्क करें: <a href="tel:+9172001257" class="text-blue-600 hover:underline">+91 72001 257</a></p>
+        <!-- AI Image Placeholder -->
+        
+    </section>
+
+    <!-- Video Section -->
+    <section class="section-bg py-12 relative">
+        <div class="animated-bg"></div>
+        <div class="shape shape-1"></div>
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center fade-in">Ebook का परिचय देखें</h2>
+            <div class="video-container mt-8 max-w-3xl mx-auto fade-in" style="animation-delay: 0.2s;">
+                
+		<video width="100%" controls>
+		  <source src="ebook video.mp4" type="video/mp4">
+		  Your browser does not support the video tag.
+		</video>
+            </div>
+            <div class="ai-image-placeholder mx-auto mt-6 w-48 h-20 fade-in" style="animation-delay: 0.6s;">
+            <button class="floating-btn">केवल 99 ₹ में पढ़ें</button>
+        </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6 text-center relative">
+        <div class="animated-bg"></div>
+        <p class="fade-in">अस्वीकरण: परिणाम व्यक्तिगत प्रयास और अनुप्रयोग पर निर्भर करते हैं। यह ईबुक केवल सूचना के उद्देश्य से है और विशिष्ट परिणामों की गारंटी नहीं देता।</p>
+        <p class="mt-2 fade-in" style="animation-delay: 0.2s;">अधिक जानकारी के लिए, कृपया हमारी <a href="#" class="text-blue-300 hover:underline">गोपनीयता नीति</a> और <a href="#" class="text-blue-300 hover:underline">सेवा की शर्तें</a> देखें।</p>
+    </footer>
+</body>
+</html>
